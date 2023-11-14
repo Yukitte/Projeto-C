@@ -1,204 +1,182 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
+#include<stdio.h>
 #define TAM 3
-
-typedef struct {
+//modelo do registro
+typedef struct{
     char nome[20];
     int idade;
     int id;
     int status;
-} Pessoa;
+}Aluno;
 
-void limparBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
-void cadastrar(Pessoa p[], int *totalCadastrados) {
-    p[*totalCadastrados].status = 1;
-    p[*totalCadastrados].id = rand() % 100;
-    printf("Digite o nome do aluno:\n");
-    fgets(p[*totalCadastrados].nome, sizeof(p[*totalCadastrados].nome), stdin);
-
-    printf("Digite a idade:\n");
-    scanf("%d", &p[*totalCadastrados].idade);
-    limparBuffer();
-
+void cadastrar(Aluno a[], int indice){
+    a[indice].status = 1;
+    a[indice].id = rand() % 200;
+    fflush(stdin);
+    printf("\nDigite o nome do aluno: ");
+    fflush(stdin);
+    fgets(a[indice].nome, sizeof(a[indice].nome), stdin);
+    fflush(stdin);
+    printf("Digite a idade do aluno: ");
+    fflush(stdin);
+    scanf("%d", &a[indice].idade);
+    fflush(stdin);
     printf("\n\n");
-
-    (*totalCadastrados)++;
 }
 
-void imprimirLista(Pessoa p[], int totalCadastrados) {
-    for (int i = 0; i < totalCadastrados; i++) {
-        printf("ID: %d\n", p[i].id);
-        printf("Nome: %s", p[i].nome);
-        printf("Idade: %d", p[i].idade);
-        if (p[i].status == 1) {
-            printf("\nStatus Ativo.");
-        } else {
-            printf("\nStatus Inativo.");
+void imprimir(Aluno a[], int totalCadastro){
+    if(totalCadastro == 0 ){
+        printf("\n\nnao existem alunos cadastrados");
+    }else{
+        for(int i = 0; i < totalCadastro; i++ ){
+            printf("Id: %d", a[i].id);
+            printf("\nNome: %s", a[i].nome);
+            printf("\nIdade: %d", a[i].idade);
+            a[i].status == 1 ? printf("\nStatus : Ativo"): printf("\nStatus : Inativo");
+            printf("\n\n");
         }
-        printf("\n\n");
     }
 }
-
-void buscar(Pessoa p[], int totalCadastrados, int id) {
-    if (totalCadastrados == 0) {
-        printf("Lista vazia\n");
-    } else {
-        for (int i = 0; i < totalCadastrados; i++) {
-            if (p[i].id == id) {
-                printf("Nome: %s", p[i].nome);
-                printf("Idade: %d", p[i].idade);
+void buscarRegistro(Aluno a[], int totalCadastro, int buscarId){
+    if(totalCadastro == 0){
+        printf("\nNao existe cadastros na lista\n");
+        return;
+    }else{
+        for(int i = 0; i < totalCadastro; i++){
+            if(a[i].id == buscarId){
+                printf("\nNome do registro encontrado: %s", a[i].nome);
                 return;
             }
         }
     }
-    printf("Nao existe o registro na lista.\n");
+    printf("\nRegistro nao encontrado na lista");
 }
-
-void alterar(Pessoa p[], int totalCadastrados, int id) {
-    int escolha;
-    if (totalCadastrados == 0) {
-        printf("Lista vazia\n");
+void alterarRegistro(Aluno a[], int totalCadastro, int buscarId){
+    int opcaoEscolhida;
+    if(totalCadastro == 0 ){
+        printf("Lista vazia");
         return;
-    } else {
-        for (int i = 0; i < totalCadastrados; i++) {
-            if (p[i].id == id) {
-                //achei na lista
-                printf("\n1 - Alterar nome");
-                printf("\n2 - Alterar idade");
-                printf("\n3 - Alterar status");
-                printf("\n4 - Alterar tudo");
-                printf("\nEscolha uma opcao:");
-                scanf("%d", &escolha);
+    }else{
+        for(int i = 0 ; i < totalCadastro; i++){
+            if(a[i].id == buscarId){
+                printf("\nNome: %s ", a[i].nome);
+                printf("\nIdade: %d ", a[i].idade);
+                a[i].status == 1 ? printf("\nStatus : Ativo"): printf("\nStatus : Inativo");
 
-                switch (escolha) {
-                    case 1:
-                        printf("1- Alterar nome:\n");
-                        fgets(p[i].nome, sizeof(p[i].nome), stdin);
-                        size_t length = strlen(p[i].nome);
-                        if (length > 0 && p[i].nome[length - 1] == '\n') {
-                            p[i].nome[length - 1] = '\0';
-                        }
-                        break;
+                printf("\nAlterar os dados: ");
 
-                    case 2:
-                        printf("\n2 - Alterar idade:");
-                        scanf("%d", &p[i].idade);
-                        limparBuffer();
-                        break;
-
-                    case 3:
-                        printf("Alterar status 3 - Ativo / 0 - Inativo: ");
-                        scanf("%d", &p[i].status);
-                        limparBuffer();
-                        break;
-
+                printf("Digite 1 para alterar o nome, Digite 2 para alterar a idade, Digite 3 para alterar o status ou Digite 4 para alterar todos os campos");
+                scanf("%d", &opcaoEscolhida);
+                switch (opcaoEscolhida){
+                    case 1: 
+                        printf("Alteracao do nome: ");
+                         fflush(stdin);
+                        fgets(a[i].nome, sizeof(a[i].nome), stdin);
+                         fflush(stdin);
+                    break;
+                    case 2: 
+                        printf("Alteracao da idade: ");
+                         fflush(stdin);
+                        scanf("%d", &a[i].idade);
+                         fflush(stdin);
+                    break;
+                    case 3: 
+                        printf("Alteracao do status: 1 - Ativo / 0 - Inativo");
+                         fflush(stdin);
+                        scanf("%d", &a[i].status);
+                         fflush(stdin);
+                    break;
                     case 4:
-                        printf("Alterar nome:\n");
-                        fgets(p[i].nome, sizeof(p[i].nome), stdin);
-
-                        printf("\nAlterar idade:");
-                        scanf("%d", &p[i].idade);
-                        limparBuffer();
-
-                        printf("Alterar status 1 - Ativo / 0 - Inativo");
-                        scanf("%d", &p[i].status);
-                        limparBuffer();
-                        break;
-
-                    default:
-                        printf("Opcao invalida.\n");
+                        printf("Alteracao do nome: ");
+                        fflush(stdin);
+                        fgets(a[i].nome, sizeof(a[i].nome), stdin);
+                        fflush(stdin);
+                        printf("Alteracao da idade: ");
+                        scanf("%d", &a[i].idade);
+                        fflush(stdin);
+                        printf("Alteracao do status: 1 - Ativo / 0 - Inativo");
+                        fflush(stdin);
+                        scanf("%d", &a[i].status);
+                        fflush(stdin);
                 }
-
-                return;
             }
         }
     }
-    //nao achei na lista
-    printf("Nao existe o registro na lista.\n");
 }
 
-void excluir(Pessoa p[], int *totalCadastrados, int id) {
-    if (*totalCadastrados == 0) {
-        printf("Lista vazia\n");
-        return;
-    } else {
-        for (int i = 0; i < *totalCadastrados; i++) {
-            if (p[i].id == id) {
-                // Move o último elemento para a posição do elemento a ser excluído
-                p[i] = p[*totalCadastrados - 1];
-                (*totalCadastrados)--;
-                printf("\nRegistro excluido com sucesso.\n");
-                return;
+int excluirRegistro(Aluno a[], int totalCadastro, int buscarId){
+    int achou;
+    for(int i = 0; i < totalCadastro; i++){
+            if(a[i].id == buscarId){
+                //registro encontrado
+                //exclusão
+                for(int j = i; j < totalCadastro - 1; j++ ){
+                    a[j] = a[j + 1];
+                }
+                achou = 1;
+                printf("\nExcluido com sucesso");
+                return achou;
             }
         }
-    }
-    printf("Nao existe o registro na lista.\n");
+        achou  = 0;
+        return achou;
 }
+    
 
-int main() {
-    Pessoa p[TAM];
 
-    int opcao, totalCadastrados = 0, buscaID;
+main(){
+    Aluno a[TAM];
+    int opcao, totalCadastro = 0, buscarId;
 
-    do {
-        printf("\nPara cadastrar, digite 1.\n");
-        printf("Para visualizar o cadastro, digite 2.\n");
-        printf("Para buscar um cadastro, digite 3.\n");
-        printf("Para alterar um cadastro, digite 4.\n");
-        printf("Para excluir um cadastro, digite 5.\n");
-        printf("Para sair, digite 0.\n");
-
-        printf("\n\n");
-
+    do{
+        printf("\nDigite 1 para cadastrar");
+        printf("\nDigite 2 para imprimir os cadastros");
+        printf("\nDigite 3 para buscar um cadastro");
+        printf("\nDigite 4 para alterar um cadastro");
+        printf("\nDigite 5 para excluir um cadastro");
+        printf("\nDigite 0 para encerrar o programa");
         scanf("%d", &opcao);
-
-        switch (opcao) {
+        switch (opcao){
             case 1:
-                if (totalCadastrados < TAM) {
-                    cadastrar(p, &totalCadastrados);
-                } else {
-                    printf("\nTotal de cadastros atingido.\n");
+                //cadastra
+                if(totalCadastro < TAM ){
+                    cadastrar(a, totalCadastro);
+                    totalCadastro++;
+                }else{
+                    printf("\n\nLimite maximo de cadastro atingido");
                 }
                 break;
-
             case 2:
-                if (totalCadastrados == 0) {
-                    printf("\nNao existem pessoas na lista\n");
-                } else {
-                    imprimirLista(p, totalCadastrados);
-                }
+                //mostra todos os cadastros
+                imprimir(a, totalCadastro);
                 break;
-
             case 3:
-                printf("\nDigite o id para buscar: ");
-                scanf("%d", &buscaID);
-                buscar(p, totalCadastrados, buscaID);
+                //buscar 
+                printf("Digite o id para buscar");
+                scanf("%d", &buscarId);
+                buscarRegistro(a, totalCadastro, buscarId);
                 break;
-
             case 4:
-                printf("\nDigite o id para alterar: ");
-                scanf("%d", &buscaID);
-                alterar(p, totalCadastrados, buscaID);
+                //alterar
+                printf("Digite o id para alterar");
+                scanf("%d", &buscarId);
+                alterarRegistro(a, totalCadastro, buscarId);
                 break;
-
             case 5:
-                printf("\nDigite o id para excluir: ");
-                scanf("%d", &buscaID);
-                excluir(p, &totalCadastrados, buscaID);
-                break;
-
-            default:
-                if (opcao != 0) {
-                    printf("Opcao invalida.\n");
+                //excluir
+                printf("Digite o id para excluir");
+                scanf("%d", &buscarId);
+                if(totalCadastro == 0){
+                    printf("Lista vazia");
+                }else{
+                    int res = excluirRegistro(a, totalCadastro, buscarId);
+                    if(res == 1){
+                        totalCadastro--;
+                    }else{
+                        printf("Não foi possivel excluir - aluno nao encontrado");
+                    }
                 }
+ 
+                break;
         }
-    } while (opcao != 0);
-
-    return 0;
+    }while(opcao != 0);
 }
