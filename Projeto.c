@@ -1,204 +1,324 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-#define TAM 3
+typedef enum{
+    ALCOOL,
+    DIESEL,
+    GASOLINA
+} Combustivel;
 
-typedef struct {
-    char nome[20];
-    int idade;
-    int id;
-    int status;
-} Pessoa;
+typedef struct Veiculo
+{
+    char proprietario[50];
+    Combustivel combustivel;
+    char modelo[50];
+    char cor[20];
+    char nChassi[17];
+    int ano;
+    char placa[7]; 
+    struct Veiculo *prox;
+} Veiculo;
 
-void limparBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
-void cadastrar(Pessoa p[], int *totalCadastrados) {
-    p[*totalCadastrados].status = 1;
-    p[*totalCadastrados].id = rand() % 100;
-    printf("Digite o nome do aluno:\n");
-    fgets(p[*totalCadastrados].nome, sizeof(p[*totalCadastrados].nome), stdin);
-
-    printf("Digite a idade:\n");
-    scanf("%d", &p[*totalCadastrados].idade);
-    limparBuffer();
-
-    printf("\n\n");
-
-    (*totalCadastrados)++;
-}
-
-void imprimirLista(Pessoa p[], int totalCadastrados) {
-    for (int i = 0; i < totalCadastrados; i++) {
-        printf("ID: %d\n", p[i].id);
-        printf("Nome: %s", p[i].nome);
-        printf("Idade: %d", p[i].idade);
-        if (p[i].status == 1) {
-            printf("\nStatus Ativo.");
-        } else {
-            printf("\nStatus Inativo.");
-        }
-        printf("\n\n");
+Combustivel validaCombustivel(char combustivel)
+{
+    switch (combustivel)
+    {
+    case 'a':
+        return ALCOOL;
+    case 'd':
+        return DIESEL;
+    case 'g':
+        return GASOLINA;
+    default:
+        printf("Combustivel invalido! Tente novamente\n");
+        exit(EXIT_FAILURE);
     }
 }
 
-void buscar(Pessoa p[], int totalCadastrados, int id) {
-    if (totalCadastrados == 0) {
-        printf("Lista vazia\n");
-    } else {
-        for (int i = 0; i < totalCadastrados; i++) {
-            if (p[i].id == id) {
-                printf("Nome: %s", p[i].nome);
-                printf("Idade: %d", p[i].idade);
-                return;
+Veiculo *criarVeiculo(char proprietario[], Combustivel combustivel, 
+        char modelo[], char cor[], char nChassi[17], int ano, char placa[])
+{
+    Veiculo *novoVeiculo = (Veiculo *)malloc(sizeof(Veiculo));
+    if (novoVeiculo == NULL)
+    {
+        perror("Erro ao alocar memória para o veículo");
+        exit(EXIT_FAILURE);
+    }
+
+    // Copiar os campos para o novo veículo
+    strcpy(novoVeiculo->proprietario, proprietario);
+    novoVeiculo->combustivel = combustivel;
+    strcpy(novoVeiculo->modelo, modelo);
+    strcpy(novoVeiculo->cor, cor);
+    stpcpy(novoVeiculo->nChassi, nChassi);
+    novoVeiculo->ano = ano;
+    strcpy(novoVeiculo->placa, placa);
+    novoVeiculo->prox = NULL;
+
+    return novoVeiculo;
+}
+
+int validarPlaca(char placa[])
+{
+    if (strlen(placa) != 7)
+    {
+        printf("A placa nao possui 7 caracteres.\n");
+        return 0;
+    }
+
+    for (int i = 0; i < 2; ++i)
+    {
+        if (!((placa[i] >= 'A' && placa[i] <= 'Z') || (placa[i] >= 'a' && placa[i] <= 'z')))
+        {
+            printf("Os tres primeiros caracteres nao sao alfabeticos.\n");
+            return 0;
+        }
+    }
+
+    for (int i = 3; i < 7; ++i)
+    {
+        if (!(placa[i] >= '0' && placa[i] <= '9'))
+        {
+            printf("Os quatro ultimos caracteres nao sao numericos.\n");
+            return 0;
+        }
+    }
+
+    printf("Placa valida!\n");
+    return 1;
+}
+
+void cadastrarVeiculo(Veiculo **lista)
+{
+    char proprietario[50];
+    Combustivel combustivel;
+    char modelo[50];
+    char cor[20];
+    char nChassi[17];
+    int ano;
+    char placa[7];
+
+    printf("Proprietário: ");
+    scanf("%s", proprietario);
+    printf("Combustível (a - Álcool, d - Diesel, g - Gasolina): ");
+    scanf(" %c", &combustivel);
+    combustivel = validaCombustivel(combustivel);
+    printf("Modelo: ");
+    scanf("%s", modelo);
+    printf("Cor: ");
+    scanf("%s", cor);
+    printf("Número do Chassi: ");
+    scanf("%s", nChassi);
+    printf("Ano: ");
+    scanf("%d", &ano);
+    int placaValida;
+    do
+    {
+        printf("Placa: (somente 7 caracteres)");
+        scanf("%s", placa);
+        placaValida = validarPlaca(placa);
+
+    } while (!placaValida);
+    validarPlaca(placa);
+
+    Veiculo *novoVeiculo = criarVeiculo(proprietario, combustivel, modelo, cor, nChassi, ano, placa);
+
+    novoVeiculo->prox = *lista;
+    *lista = novoVeiculo;
+}
+
+void imprimirLista(Veiculo *lista)
+{
+    Veiculo *atual = lista;
+    while (atual != NULL)
+    {
+        printf("Proprietário: %s\n", atual->proprietario);
+        printf("Combustível: ");
+        switch (atual->combustivel)
+        {
+        case ALCOOL:
+            printf("Álcool\n");
+            break;
+        case DIESEL:
+            printf("Diesel\n");
+            break;
+        case GASOLINA:
+            printf("Gasolina\n");
+            break;
+        }
+        printf("Modelo: %s\n", atual->modelo);
+        printf("Cor: %s\n", atual->cor);
+        printf("Número do Chassi: %.2s\n", atual->nChassi);
+        printf("Ano: %d\n", atual->ano);
+        printf("Placa: %s\n", atual->placa);
+        printf("\n");
+
+        atual = atual->prox;
+    }
+}
+// a. Uma função que liste todos os proprietários cujos carros são do ano de 2010 ou posterior e que sejam movidos a diesel. (1,0 ponto)
+void funcaoA(Veiculo *lista)
+{
+    Veiculo *atual = lista;
+    printf("Proprietarios cujos carros sao do ano de 2010 ou mais e que sejam movidos a diesel\n");
+
+    while (atual != NULL)
+    {
+        if (atual->ano >= 2010 && atual->combustivel == DIESEL)
+        {
+            // liste os proprietarios
+            printf("Proprietário: %s\n", atual->proprietario);
+            printf("Combustível: Diesel\n");
+            printf("Modelo: %s\n", atual->modelo);
+            printf("Cor: %s\n", atual->cor);
+            printf("Número do Chassi: %.2s\n", atual->nChassi);
+            printf("Ano: %d\n", atual->ano);
+            printf("Placa: %s\n", atual->placa);
+            printf("\n");
+        }
+
+        atual = atual->prox;
+    }
+}
+// b. Uma função que liste todas as placas que comecem com a letra J e terminem com 0, 2, 4 ou 7 e seus respectivos proprietários. (1,0 ponto)
+void funcaoB(Veiculo *lista)
+{
+    Veiculo *atual = lista;
+    printf("As placas que comecam com j e terminam com 0, 2, 4 ou 7\n");
+
+    while (atual != NULL)
+    {
+        if (atual->placa[0] == 'j' && (atual->placa[6] == '0' ||
+             atual->placa[6] == '2' || atual->placa[6] == '4' || atual->placa[6] == '7'))
+        {
+            // liste a placa
+            printf("Placa: %s\n", atual->placa);
+            printf("Proprietário: %s\n", atual->proprietario);
+            printf("\n");
+        }
+
+        atual = atual->prox;
+    }
+}
+// c. Uma função que liste o modelo e a cor dos veículos cujas placas possuem como segunda letra uma vogal e cuja soma dos valores numéricos fornece um número par. (1,0 ponto)
+void funcaoC(Veiculo *lista)
+{
+    Veiculo *atual = lista;
+    printf("Modelo e cor dos veículos que as placas possuem vogal no "
+            "segundo caractere e a soma de valores numericos da placa seja numero par\n");
+
+    while (atual != NULL)
+    {
+        int somaN = 0;
+        for (int i = 3; i < 7; i++)
+        {
+            somaN += atual->placa[i] - '0';
+        }
+
+        if ((atual->placa[1] == 'a' || atual->placa[1] == 'e' || atual->placa[1] == 'i' 
+                || atual->placa[1] == 'o' || atual->placa[1] == 'u') && somaN % 2 == 0){
+            // lista o modelo e a cor do veículo
+            printf("Modelo: %s\n", atual->modelo);
+            printf("Cor: %s\n", atual->cor);
+            printf("\n");
+        }
+
+        atual = atual->prox;
+    }
+}
+// d. Uma função que permita a troca de proprietário com o fornecimento do número do chassi apenas para carros com placas que não possuam nenhum dígito igual a zero. (1,0 ponto)
+void funcaoD(Veiculo *lista, char nChassi[])
+{
+    Veiculo *atual = lista;
+    int encontrado = 0;
+
+    while (atual != NULL)
+    {
+        int temZero = 0;
+        for (int i = 0; i < 7; i++)
+        {
+            if (atual->placa[i] == '0')
+            {
+                temZero = 1; // verdadeiro
+                break;
             }
         }
-    }
-    printf("Nao existe o registro na lista.\n");
-}
 
-void alterar(Pessoa p[], int totalCadastrados, int id) {
-    int escolha;
-    if (totalCadastrados == 0) {
-        printf("Lista vazia\n");
-        return;
-    } else {
-        for (int i = 0; i < totalCadastrados; i++) {
-            if (p[i].id == id) {
-                //achei na lista
-                printf("\n1 - Alterar nome");
-                printf("\n2 - Alterar idade");
-                printf("\n3 - Alterar status");
-                printf("\n4 - Alterar tudo");
-                printf("\nEscolha uma opcao:");
-                scanf("%d", &escolha);
+        if (temZero == 0 && strcmp(atual->nChassi, nChassi) == 0)
+        {
+            // troca de proprietario
+            printf("Troca de proprietário com o fornecimento do número do chassi "
+            "apenas para carros com placas que não possuam nenhum dígito igual a zero\n");
+            printf("Número do Chassi: %.2s\n", atual->nChassi);
+            printf("Placa: %s\n", atual->placa);
+            printf("Digite o novo proprietário: ");
+            scanf("%s", atual->proprietario);
+            printf("Troca de proprietário realizada com sucesso!\n");
 
-                switch (escolha) {
-                    case 1:
-                        printf("1- Alterar nome:\n");
-                        fgets(p[i].nome, sizeof(p[i].nome), stdin);
-                        size_t length = strlen(p[i].nome);
-                        if (length > 0 && p[i].nome[length - 1] == '\n') {
-                            p[i].nome[length - 1] = '\0';
-                        }
-                        break;
-
-                    case 2:
-                        printf("\n2 - Alterar idade:");
-                        scanf("%d", &p[i].idade);
-                        limparBuffer();
-                        break;
-
-                    case 3:
-                        printf("Alterar status 3 - Ativo / 0 - Inativo: ");
-                        scanf("%d", &p[i].status);
-                        limparBuffer();
-                        break;
-
-                    case 4:
-                        printf("Alterar nome:\n");
-                        fgets(p[i].nome, sizeof(p[i].nome), stdin);
-
-                        printf("\nAlterar idade:");
-                        scanf("%d", &p[i].idade);
-                        limparBuffer();
-
-                        printf("Alterar status 1 - Ativo / 0 - Inativo");
-                        scanf("%d", &p[i].status);
-                        limparBuffer();
-                        break;
-
-                    default:
-                        printf("Opcao invalida.\n");
-                }
-
-                return;
-            }
+            encontrado = 1; // Defina a flag para indicar que o veículo foi encontrado
+            break;
         }
+        atual = atual->prox;
     }
-    //nao achei na lista
-    printf("Nao existe o registro na lista.\n");
+    // Imprimir mensagem de erro se o veículo não for encontrado
+    if (!encontrado)
+    {
+        printf("Veículo com o número do chassi fornecido não encontrado ou placa possui dígito igual a zero.\n");
+    }
 }
 
-void excluir(Pessoa p[], int *totalCadastrados, int id) {
-    if (*totalCadastrados == 0) {
-        printf("Lista vazia\n");
-        return;
-    } else {
-        for (int i = 0; i < *totalCadastrados; i++) {
-            if (p[i].id == id) {
-                // Move o último elemento para a posição do elemento a ser excluído
-                p[i] = p[*totalCadastrados - 1];
-                (*totalCadastrados)--;
-                printf("\nRegistro excluido com sucesso.\n");
-                return;
-            }
-        }
-    }
-    printf("Nao existe o registro na lista.\n");
-}
+int main(void)
+{
+    Veiculo *listaVeiculos = NULL;
+    int opcao;
 
-int main() {
-    Pessoa p[TAM];
-
-    int opcao, totalCadastrados = 0, buscaID;
-
-    do {
-        printf("\nPara cadastrar, digite 1.\n");
-        printf("Para visualizar o cadastro, digite 2.\n");
-        printf("Para buscar um cadastro, digite 3.\n");
-        printf("Para alterar um cadastro, digite 4.\n");
-        printf("Para excluir um cadastro, digite 5.\n");
-        printf("Para sair, digite 0.\n");
-
-        printf("\n\n");
-
+    do
+    {
+        printf("Escolha uma opcao\n");
+        printf("1:Cadastrar veiculo\n");
+        printf("2:Imprimir lista\n");
+        printf("3:Funcao A\n");
+        printf("4:Funcao B\n");
+        printf("5:Funcao C\n");
+        printf("6:Funcao D\n");
+        printf("0:Sair\n");
         scanf("%d", &opcao);
 
-        switch (opcao) {
-            case 1:
-                if (totalCadastrados < TAM) {
-                    cadastrar(p, &totalCadastrados);
-                } else {
-                    printf("\nTotal de cadastros atingido.\n");
-                }
-                break;
-
-            case 2:
-                if (totalCadastrados == 0) {
-                    printf("\nNao existem pessoas na lista\n");
-                } else {
-                    imprimirLista(p, totalCadastrados);
-                }
-                break;
-
-            case 3:
-                printf("\nDigite o id para buscar: ");
-                scanf("%d", &buscaID);
-                buscar(p, totalCadastrados, buscaID);
-                break;
-
-            case 4:
-                printf("\nDigite o id para alterar: ");
-                scanf("%d", &buscaID);
-                alterar(p, totalCadastrados, buscaID);
-                break;
-
-            case 5:
-                printf("\nDigite o id para excluir: ");
-                scanf("%d", &buscaID);
-                excluir(p, &totalCadastrados, buscaID);
-                break;
-
-            default:
-                if (opcao != 0) {
-                    printf("Opcao invalida.\n");
-                }
+        switch (opcao)
+        {
+        case 1:
+            cadastrarVeiculo(&listaVeiculos);
+            break;
+        case 2:
+            imprimirLista(listaVeiculos);
+            break;
+        case 3:
+            funcaoA(listaVeiculos);
+            break;
+        case 4:
+            funcaoB(listaVeiculos);
+            break;
+        case 5:
+            funcaoC(listaVeiculos);
+            break;
+        case 6:
+            printf("Digite o número do Chassi para a troca de proprietário: ");
+            char nChassi[20];
+            scanf("%s", nChassi);
+            funcaoD(listaVeiculos, nChassi);
+            break;
+        default:
+            break;
         }
     } while (opcao != 0);
 
-    return 0;
+    // Liberar a memória alocada ao final do programa
+    while (listaVeiculos != NULL)
+    {
+        Veiculo *temp = listaVeiculos;
+        listaVeiculos = listaVeiculos->prox;
+        free(temp);
+    }
 }
